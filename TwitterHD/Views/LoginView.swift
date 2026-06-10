@@ -30,53 +30,45 @@ struct LoginView: View {
     
     private var successView: some View {
         VStack(spacing: 20) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 64))
-                .foregroundColor(.green)
+            Image(systemName: "checkmark.circle.fill").font(.system(size: 64)).foregroundColor(.green)
             Text("登录成功").font(.title2).fontWeight(.bold)
-            Text("Cookies 已保存，可以开始下载了").foregroundColor(.secondary)
-            Button("开始使用") { dismiss() }
-                .buttonStyle(.borderedProminent).padding(.top, 10)
+            Text("Cookies 已保存").foregroundColor(.secondary)
+            Button("开始使用") { dismiss() }.buttonStyle(.borderedProminent).padding(.top, 10)
         }
     }
     
     private func errorView(_ msg: String) -> some View {
         VStack(spacing: 20) {
-            Image(systemName: "exclamationmark.triangle")
-                .font(.system(size: 50)).foregroundColor(.orange)
+            Image(systemName: "exclamationmark.triangle").font(.system(size: 50)).foregroundColor(.orange)
             Text("加载失败").font(.title2)
-            Text(msg).font(.body).foregroundColor(.secondary)
-                .multilineTextAlignment(.center).padding(.horizontal)
+            Text(msg).font(.body).foregroundColor(.secondary).multilineTextAlignment(.center).padding(.horizontal)
             Button("重试") { viewModel.errorMessage = nil }.buttonStyle(.bordered)
             Button("取消") { dismiss() }.buttonStyle(.bordered)
         }.padding()
     }
 }
  
-// MARK: - WKWebView 包装器
- 
 struct WebViewWrapper: UIViewRepresentable {
     @ObservedObject var viewModel: LoginViewModel
-    
-    func makeUIView(context: Context) -> WKWebView {
-        viewModel.makeWebView()
-    }
-    func updateUIView(_ uiView: WKWebView, context: Context) {}
+    func makeUIView(context: Context) -> WKWebView { viewModel.makeWebView() }
+    func updateUIView(_: WKWebView, context: Context) {}
 }
- 
-// MARK: - LoginViewModel
  
 @MainActor
 class LoginViewModel: NSObject, ObservableObject, WKNavigationDelegate {
     @Published var isLoading = false
     @Published var didSucceed = false
     @Published var errorMessage: String?
-    
     private var webView: WKWebView?
     
     func makeWebView() -> WKWebView {
-       if let existing = webView { return existing }
+        if let existing = webView { return existing }
         let config = WKWebViewConfiguration()
+        config.websiteDataStore = WKWebsiteDataStore.default()
+        let pref = WKWebpagePreferences()
+        pref.allowsContentJavaScript = true
+        config.defaultWebpagePreferences = pref
+        config.preferences.javaScriptCanOpenWindowsAutomatically = true
         let wv = WKWebView(frame: .zero, configuration: config)
         wv.navigationDelegate = self
         wv.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -85,29 +77,38 @@ class LoginViewModel: NSObject, ObservableObject, WKNavigationDelegate {
         return wv
     }
     
-    nonisolated func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+    nonisolated func webView(_ wv: WKWebView, decidePolicyFor action: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        if let url = action.request.url, let scheme = url.scheme?.lowercased() {
+            if !["http", "https", "about", "data", "blob", "file"].contains(scheme) {
+                Task { @MainActor in UIApplication.shared.open(url, options: [:], completionHandler: nil) }
+                decisionHandler(.cancel)
+                return
+            }
+        }
+        decisionHandler(.allow)
+    }
+    
+    nonisolated func webView(_: WKWebView, didStartProvisionalNavigation _: WKNavigation!) {
         Task { @MainActor in self.isLoading = true }
     }
-    nonisolated func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
-        checkCookies(webView)
+    nonisolated func webView(_ wv: WKWebView, didCommit _: WKNavigation!) { checkCookies(wv) }
+    nonisolated func webView(_ wv: WKWebView, didFinish _: WKNavigation!) {
+        Task { @MainActor in self.isLoading = false }; checkCookies(wv)
     }
-    nonisolated func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        Task { @MainActor in self.isLoading = false }; checkCookies(webView)
+    nonisolated func webView(_: WKWebView, didFail _: WKNavigation!, withError e: Error) {
+        Task { @MainActor in self.isLoading = false; self.errorMessage = e.localizedDescription }
     }
-    nonisolated func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        Task { @MainActor in self.isLoading = false; self.errorMessage = error.localizedDescription }
+    nonisolated func webView(_: WKWebView, didFailProvisionalNavigation _: WKNavigation!, withError e: Error) {
+        Task { @MainActor in self.isLoading = false; self.errorMessage = e.localizedDescription }
     }
-   nonisolated func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-       Task { @MainActor in self.isLoading = false; self.errorMessage = error.localizedDescription }
-   }
-   
-    private nonisolated func checkCookies(_ webView: WKWebView) {
-       webView.configuration.websiteDataStore.httpCookieStore.getAllCookies { [weak self] cookies in
+    
+    private nonisolated func checkCookies(_ wv: WKWebView) {
+        wv.configuration.websiteDataStore.httpCookieStore.getAllCookies { [weak self] cookies in
             let hasAuth = cookies.contains { $0.name == "auth_token" && !$0.value.isEmpty }
             let hasCt0 = cookies.contains { $0.name == "ct0" && !$0.value.isEmpty }
             if hasAuth && hasCt0 {
                 Task { @MainActor in
-                    await AuthService.shared.saveCookies(from: webView)
+                    await AuthService.shared.saveCookies(from: wv)
                     self?.didSucceed = true
                 }
             }
