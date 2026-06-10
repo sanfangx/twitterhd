@@ -13,9 +13,9 @@ targets:
     platform: iOS
     sources: TwitterHD
     dependencies:
-      - framework: WebKit.framework
-      - framework: Photos.framework
-      - framework: UniformTypeIdentifiers.framework
+      - sdk: WebKit
+      - sdk: Photos
+      - sdk: UniformTypeIdentifiers
     settings:
       base:
         INFOPLIST_FILE: TwitterHD/Info.plist
