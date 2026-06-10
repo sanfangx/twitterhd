@@ -13,9 +13,12 @@ targets:
     platform: iOS
     sources: TwitterHD
     dependencies:
-      - sdk: WebKit
-      - sdk: Photos
-      - sdk: UniformTypeIdentifiers
+      - framework: WebKit.framework
+        embed: false
+      - framework: Photos.framework
+        embed: false
+      - framework: UniformTypeIdentifiers.framework
+        embed: false
     settings:
       base:
         INFOPLIST_FILE: TwitterHD/Info.plist
