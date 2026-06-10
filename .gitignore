@@ -1,0 +1,8 @@
+ .DS_Store
+ *.swp
+ *.xcuserdata
+ DerivedData/
+ Build/
+ *.ipa
+ *.dSYM.zip
+ *.dSYM
