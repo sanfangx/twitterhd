@@ -66,6 +66,7 @@ struct WebViewWrapper: UIViewRepresentable {
  
 // MARK: - LoginViewModel
  
+@MainActor
 class LoginViewModel: NSObject, ObservableObject, WKNavigationDelegate {
     @Published var isLoading = false
     @Published var didSucceed = false
@@ -74,7 +75,7 @@ class LoginViewModel: NSObject, ObservableObject, WKNavigationDelegate {
     private var webView: WKWebView?
     
     func makeWebView() -> WKWebView {
-        if let existing = webView { return existing }
+       if let existing = webView { return existing }
         let config = WKWebViewConfiguration()
         let wv = WKWebView(frame: .zero, configuration: config)
         wv.navigationDelegate = self
@@ -84,24 +85,24 @@ class LoginViewModel: NSObject, ObservableObject, WKNavigationDelegate {
         return wv
     }
     
-    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-        isLoading = true
+    nonisolated func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+        Task { @MainActor in self.isLoading = true }
     }
-    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+    nonisolated func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
         checkCookies(webView)
     }
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        isLoading = false; checkCookies(webView)
+    nonisolated func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        Task { @MainActor in self.isLoading = false }; checkCookies(webView)
     }
-    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        isLoading = false; errorMessage = error.localizedDescription
+    nonisolated func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        Task { @MainActor in self.isLoading = false; self.errorMessage = error.localizedDescription }
     }
-    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-        isLoading = false; errorMessage = error.localizedDescription
-    }
-    
-    private func checkCookies(_ webView: WKWebView) {
-        webView.configuration.websiteDataStore.httpCookieStore.getAllCookies { [weak self] cookies in
+   nonisolated func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+       Task { @MainActor in self.isLoading = false; self.errorMessage = error.localizedDescription }
+   }
+   
+    private nonisolated func checkCookies(_ webView: WKWebView) {
+       webView.configuration.websiteDataStore.httpCookieStore.getAllCookies { [weak self] cookies in
             let hasAuth = cookies.contains { $0.name == "auth_token" && !$0.value.isEmpty }
             let hasCt0 = cookies.contains { $0.name == "ct0" && !$0.value.isEmpty }
             if hasAuth && hasCt0 {
