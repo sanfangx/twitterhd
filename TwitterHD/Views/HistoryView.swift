@@ -1,4 +1,4 @@
- import SwiftUI
+﻿ import SwiftUI
  
  struct HistoryView: View {
      @State private var records: [TweetRecord] = []
@@ -13,12 +13,12 @@
                          Image(systemName: "clock.arrow.circlepath")
                              .font(.system(size: 60))
                              .foregroundColor(.secondary)
-                         Text("还没有下载记录")
+                         Text("杩樻病鏈変笅杞借褰?)
                              .font(.title3)
                              .foregroundColor(.secondary)
-                         Text("下载推文图片后，记录会显示在这里")
+                         Text("涓嬭浇鎺ㄦ枃鍥剧墖鍚庯紝璁板綍浼氭樉绀哄湪杩欓噷")
                              .font(.subheadline)
-                             .foregroundColor(.tertiary)
+                             .foregroundStyle(.tertiary)
                      }
                  } else {
                      List {
@@ -39,7 +39,7 @@
                      }
                  }
              }
-             .navigationTitle("历史记录")
+             .navigationTitle("鍘嗗彶璁板綍")
              .onAppear { refresh() }
              .sheet(isPresented: $showDetail) {
                  if let record = selectedRecord {
@@ -54,15 +54,13 @@
      }
  }
  
- // MARK: - 历史行
- 
+ // MARK: - 鍘嗗彶琛? 
  struct HistoryRow: View {
      let record: TweetRecord
      
      var body: some View {
          HStack(spacing: 12) {
-             // 缩略图
-             if let firstImage = record.sortedImages.first,
+             // 缂╃暐鍥?             if let firstImage = record.sortedImages.first,
                 let url = URL(string: firstImage.imageUrl) {
                  AsyncImage(url: url) { phase in
                      switch phase {
@@ -92,10 +90,10 @@
                  HStack(spacing: 8) {
                      Text(record.downloadedAt, style: .date)
                          .font(.caption2)
-                         .foregroundColor(.tertiary)
-                     Text("\(record.sortedImages.count) 张图片")
+                         .foregroundStyle(.tertiary)
+                     Text("\(record.sortedImages.count) 寮犲浘鐗?)
                          .font(.caption2)
-                         .foregroundColor(.tertiary)
+                         .foregroundStyle(.tertiary)
                  }
              }
          }
@@ -103,7 +101,7 @@
      }
  }
  
- // MARK: - 历史详情
+ // MARK: - 鍘嗗彶璇︽儏
  
  struct HistoryDetailView: View {
      let record: TweetRecord
@@ -116,7 +114,7 @@
          NavigationStack {
              ScrollView {
                  VStack(alignment: .leading, spacing: 12) {
-                     // 推文信息
+                     // 鎺ㄦ枃淇℃伅
                      VStack(alignment: .leading, spacing: 4) {
                          Text("@\(record.username)")
                              .font(.headline)
@@ -125,13 +123,13 @@
                                  .font(.body)
                                  .foregroundColor(.secondary)
                          }
-                         Text("下载于: ") + Text(record.downloadedAt, style: .date)
+                         Text("涓嬭浇浜? ") + Text(record.downloadedAt, style: .date)
                              .font(.caption)
-                             .foregroundColor(.tertiary)
+                             .foregroundStyle(.tertiary)
                      }
                      .padding(.horizontal)
                      
-                     // 图片网格
+                     // 鍥剧墖缃戞牸
                      LazyVGrid(columns: [GridItem(.adaptive(minimum: 150))], spacing: 8) {
                          ForEach(Array(record.sortedImages.enumerated()), id: \.offset) { index, img in
                              if let url = URL(string: img.imageUrl) {
@@ -147,7 +145,7 @@
                                  .frame(height: 150)
                                  .clipShape(RoundedRectangle(cornerRadius: 8))
                                  .onTapGesture {
-                                     // 加载图片到 previewImages
+                                     // 鍔犺浇鍥剧墖鍒?previewImages
                                      loadPreviewImages()
                                      previewIndex = index
                                      showPreview = true
@@ -158,7 +156,7 @@
                      .padding(.horizontal)
                  }
              }
-             .navigationTitle("推文详情")
+             .navigationTitle("鎺ㄦ枃璇︽儏")
              .navigationBarTitleDisplayMode(.inline)
              .fullScreenCover(isPresented: $showPreview) {
                  if !previewImages.isEmpty {
@@ -169,9 +167,8 @@
      }
      
      private func loadPreviewImages() {
-         // 从缓存或网络加载图片
-         // 简化处理：用 UIImageView 的异步加载
-         previewImages = []
+         // 浠庣紦瀛樻垨缃戠粶鍔犺浇鍥剧墖
+         // 绠€鍖栧鐞嗭細鐢?UIImageView 鐨勫紓姝ュ姞杞?         previewImages = []
          for img in record.sortedImages {
              if let url = URL(string: img.imageUrl),
                 let data = try? Data(contentsOf: url),
