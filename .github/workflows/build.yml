@@ -18,32 +18,33 @@
        - name: Generate Xcode project
          run: xcodegen generate
  
-      - name: Build + Package .ipa (no signing, TrollStore)
-        run: |
-          set -eo pipefail
-          xcodebuild build \
-            -project TwitterHD.xcodeproj \
-            -scheme TwitterHD \
-            -sdk iphoneos \
-            -configuration Release \
-            -derivedDataPath DerivedData \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_STYLE=Manual 2>&1 | tee build.log
-
-      - name: Package .ipa
-        run: |
-          APP_PATH="DerivedData/Build/Products/Release-iphoneos/TwitterHD.app"
-          if [ ! -d "$APP_PATH" ]; then
-            echo "❌ App bundle not found at $APP_PATH"
-            echo "Build may have failed. Check build.log in artifacts."
-            exit 1
-          fi
-          echo "✅ Found app bundle"
-          mkdir -p Payload
-          cp -r "$APP_PATH" Payload/
-          zip -r TwitterHD.ipa Payload/
-          rm -rf Payload
+       - name: Build + Package .ipa
+         run: |
+           set -eo pipefail
+           xcodebuild build \
+             -project TwitterHD.xcodeproj \
+             -scheme TwitterHD \
+             -sdk iphoneos \
+             -configuration Release \
+             -derivedDataPath DerivedData \
+             CODE_SIGNING_ALLOWED=NO \
+             CODE_SIGNING_REQUIRED=NO \
+             CODE_SIGN_STYLE=Manual 2>&1 | tee build.log
+ 
+       - name: Package .ipa
+         run: |
+           APP_PATH="DerivedData/Build/Products/Release-iphoneos/TwitterHD.app"
+           if [ ! -d "$APP_PATH" ]; then
+             echo "App bundle not found at $APP_PATH"
+             echo "Build failed. Check build.log in artifacts."
+             exit 1
+           fi
+           echo "Found app bundle, packaging..."
+           mkdir -p Payload
+           cp -r "$APP_PATH" Payload/
+           zip -r TwitterHD.ipa Payload/
+           rm -rf Payload
+           ls -lh TwitterHD.ipa
  
        - name: Upload artifacts
          uses: actions/upload-artifact@v4
