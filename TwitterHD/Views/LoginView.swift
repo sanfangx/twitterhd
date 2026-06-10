@@ -68,9 +68,11 @@ class LoginViewModel: NSObject, ObservableObject, WKNavigationDelegate {
         let pref = WKWebpagePreferences()
         pref.allowsContentJavaScript = true
         config.defaultWebpagePreferences = pref
-        config.preferences.javaScriptCanOpenWindowsAutomatically = true
-        let wv = WKWebView(frame: .zero, configuration: config)
-        wv.navigationDelegate = self
+       config.preferences.javaScriptCanOpenWindowsAutomatically = true
+        // 模拟桌面 Safari，避免 X 对移动端 UA 做限制
+        config.applicationNameForUserAgent = "Version/17.0 Safari/605.1.15"
+       let wv = WKWebView(frame: .zero, configuration: config)
+       wv.navigationDelegate = self
         wv.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         webView = wv
         wv.load(URLRequest(url: URL(string: "https://x.com/login")!))
@@ -98,9 +100,12 @@ class LoginViewModel: NSObject, ObservableObject, WKNavigationDelegate {
     nonisolated func webView(_: WKWebView, didFail _: WKNavigation!, withError e: Error) {
         Task { @MainActor in self.isLoading = false; self.errorMessage = e.localizedDescription }
     }
-    nonisolated func webView(_: WKWebView, didFailProvisionalNavigation _: WKNavigation!, withError e: Error) {
-        Task { @MainActor in self.isLoading = false; self.errorMessage = e.localizedDescription }
-    }
+   nonisolated func webView(_: WKWebView, didFailProvisionalNavigation _: WKNavigation!, withError e: Error) {
+        let ns = e as NSError
+        // 忽略"Frame load interrupted"(WebKit 102)等非致命错误，页面可能继续加载
+        if ns.domain == "WebKitErrorDomain" && ns.code == 102 { return }
+       Task { @MainActor in self.isLoading = false; self.errorMessage = e.localizedDescription }
+   }
     
     private nonisolated func checkCookies(_ wv: WKWebView) {
         wv.configuration.websiteDataStore.httpCookieStore.getAllCookies { [weak self] cookies in
