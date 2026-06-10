@@ -18,7 +18,7 @@ import SwiftUI
                              .foregroundColor(.secondary)
                          Text("下载推文图片后，记录会显示在这里")
                              .font(.subheadline)
-                             .foregroundStyle(.tertiary)
+                             .foregroundColor(Color.tertiary)
                      }
                  } else {
                      List {
@@ -92,10 +92,10 @@ import SwiftUI
                  HStack(spacing: 8) {
                      Text(record.downloadedAt, style: .date)
                          .font(.caption2)
-                         .foregroundStyle(.tertiary)
+                         .foregroundColor(Color.tertiary)
                      Text("\(record.sortedImages.count) 张图片")
                          .font(.caption2)
-                         .foregroundStyle(.tertiary)
+                         .foregroundColor(Color.tertiary)
                  }
              }
          }
@@ -127,7 +127,7 @@ import SwiftUI
                          }
                          Text("下载于 ") + Text(record.downloadedAt, style: .date)
                              .font(.caption)
-                             .foregroundStyle(.tertiary)
+                             .foregroundColor(Color.tertiary)
                      }
                      .padding(.horizontal)
                      
