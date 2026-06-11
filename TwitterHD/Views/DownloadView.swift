@@ -75,6 +75,7 @@ struct DownloadView: View {
                     .background(tweetURL.isEmpty || isFetching || isDownloading ? Color.gray : Color.blue)
                     .foregroundColor(.white).cornerRadius(10)
                     .contentShape(Rectangle())
+                    .buttonStyle(.plain)
                     .disabled(tweetURL.isEmpty || isFetching || isDownloading)
                     
                     if !imageItems.isEmpty {
@@ -161,6 +162,7 @@ struct DownloadView: View {
                     Label("从剪贴板粘贴", systemImage: "doc.on.clipboard")
                 }.buttonStyle(.bordered).padding()
             }
+            Spacer()
         }
         .alert("错误", isPresented: $showError) {
             Button("确定") {}
