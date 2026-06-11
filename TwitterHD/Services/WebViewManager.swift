@@ -18,7 +18,7 @@ class WebViewManager: NSObject, ObservableObject {
                 try {
                     let u = new URL(img.src);
                     let f = new URLSearchParams(u.search).get('format') || 'jpg';
-                    res.push(u.origin + u.pathname + "?format=" + f + "&name=orig");
+                    res.push(u.origin + u.pathname + "?format=" + f + "&name=small");
                 } catch(e) {}
             });
             if (res.length > 0)
