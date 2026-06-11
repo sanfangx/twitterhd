@@ -53,9 +53,47 @@
          return nil
      }
      
-     /// 获取推文信息
-     func fetchTweet(url tweetUrl: String) async throws -> TweetInfo {
-         guard let tweetId = extractTweetId(from: tweetUrl) else {
+    /// 获取推文信息
+    func fetchTweet(url tweetUrl: String) async throws -> TweetInfo {
+        // 优先使用 syndication API（更可靠，不需要 Cookie）
+        if let result = try? await fetchViaSyndication(url: tweetUrl) {
+            return result
+        }
+        // 后备：解析推文页面 HTML（需要登录 Cookie）
+        return try await fetchViaPage(url: tweetUrl)
+    }
+    
+    /// 通过 syndication API 获取推文（不需要登录）
+    private func fetchViaSyndication(url tweetUrl: String) async throws -> TweetInfo {
+        guard let tweetId = extractTweetId(from: tweetUrl) else { throw TwitterError.invalidURL }
+        let apiURL = URL(string: "https://cdn.syndication.twimg.com/tweet-result?id=\(tweetId)")!
+        var request = URLRequest(url: apiURL)
+        request.timeoutInterval = 15
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              httpResponse.statusCode == 200,
+              let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw TwitterError.fetchFailed
+        }
+        let mediaUrls = findValues(forKey: "media_url_https", in: json)
+        guard !mediaUrls.isEmpty else { throw TwitterError.noImagesFound("syndication: no media_url_https") }
+        let images = mediaUrls.reduce(into: [ImageInfo]()) { result, urlStr in
+            let img = ImageInfo(url: origURL(from: urlStr), width: 0, height: 0)
+            if !result.contains(where: { $0.url == img.url }) { result.append(img) }
+        }
+        let username = findValue(forKey: "screen_name", in: json) ?? "unknown"
+        let displayName = findValue(forKey: "name", in: json)
+        let tweetText = findTweetText(in: json)
+        let dateStr = findValue(forKey: "created_at", in: json) ?? ""
+        let date = parseTwitterDate(dateStr) ?? Date()
+        return TweetInfo(tweetId: tweetId, username: username,
+                        displayName: displayName, tweetText: tweetText,
+                        createdAt: date, images: images)
+    }
+    
+    /// 解析推文页面 HTML（后备）
+    private func fetchViaPage(url tweetUrl: String) async throws -> TweetInfo {
+        guard let tweetId = extractTweetId(from: tweetUrl) else {
              throw TwitterError.invalidURL
          }
          
