@@ -72,9 +72,7 @@
         guard let tweetId = extractTweetId(from: tweetUrl) else { throw TwitterError.invalidURL }
         guard let pageURL = URL(string: tweetUrl.hasPrefix("http") ? tweetUrl : "https://x.com/\(tweetUrl)") else { throw TwitterError.invalidURL }
         
-        let urls = try await MainActor.run {
-            return try await WebViewManager.shared.extractImages(from: pageURL)
-        }
+        let urls = try await WebViewManager.shared.extractImages(from: pageURL)
         
         guard !urls.isEmpty else { throw TwitterError.noImagesFound("webview: no images in DOM") }
         

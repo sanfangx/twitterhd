@@ -1,4 +1,4 @@
-import UIKit
+﻿import UIKit
 import WebKit
  
 @MainActor
@@ -20,7 +20,7 @@ class TweetPageFetcher: NSObject, WKNavigationDelegate {
         self.webView = wv
         
         // Set saved cookies before loading
-        if let cookies = await AuthService.shared.cookiesForX {
+        if let cookies = AuthService.shared.cookiesForX {
             let store = wv.configuration.websiteDataStore.httpCookieStore
             for cookie in cookies {
                 await store.setCookie(cookie)
