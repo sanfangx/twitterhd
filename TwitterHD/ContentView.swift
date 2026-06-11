@@ -1,4 +1,4 @@
-import SwiftUI
+﻿import SwiftUI
  
 struct ContentView: View {
     @State private var backgroundImage: UIImage? = nil
@@ -12,16 +12,14 @@ struct ContentView: View {
             SettingsView()
                 .tabItem { Label("设置", systemImage: "gearshape") }
         }
-        .background(
-            Group {
-                if let img = backgroundImage {
-                    Image(uiImage: img)
-                        .resizable()
-                        .scaledToFill()
-                        .ignoresSafeArea()
-                }
+        .background {
+            if let img = backgroundImage {
+                Image(uiImage: img)
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
             }
-        )
+        }
         .onAppear { backgroundImage = BackgroundManager.shared.image }
         .onReceive(BackgroundManager.shared.$image) { img in
             withAnimation(.easeInOut(duration: 0.3)) { backgroundImage = img }
