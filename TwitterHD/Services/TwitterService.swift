@@ -1,4 +1,4 @@
- import Foundation
+﻿ import Foundation
  
  // MARK: - 数据模型
  
@@ -67,10 +67,11 @@
     private func fetchViaSyndication(url tweetUrl: String) async throws -> TweetInfo {
         guard let tweetId = extractTweetId(from: tweetUrl) else { throw TwitterError.invalidURL }
         let apiURL = URL(string: "https://cdn.syndication.twimg.com/tweet-result?id=\(tweetId)")!
-        var request = URLRequest(url: apiURL)
-        request.timeoutInterval = 15
-        let (data, response) = try await session.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse,
+       var request = URLRequest(url: apiURL)
+       request.timeoutInterval = 15
+        await addCookies(to: &request)
+       let (data, response) = try await session.data(for: request)
+       guard let httpResponse = response as? HTTPURLResponse,
               httpResponse.statusCode == 200,
               let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             throw TwitterError.fetchFailed
@@ -180,8 +181,9 @@
                              createdAt: Date(), images: images)
          }
         
+        let hasPbsMedia = html.contains("pbs.twimg.com/media/")
         throw TwitterError.noImagesFound(
-            "next_data=\(hasNextData) media_url=\(hasMediaUrl) pbs=\(hasPbs) page_size=\(html.count)"
+            "next_data=\\(hasNextData) media_url=\\(hasMediaUrl) pbs=\\(hasPbs) pbs_media=\\(hasPbsMedia) page_size=\\(html.count)"
         )
     }
     
