@@ -164,7 +164,7 @@
                  tweetInfo = info
                  
                  guard !info.images.isEmpty else {
-                     throw TwitterError.noImagesFound
+                    throw TwitterError.noImagesFound("tweet_info_empty")
                  }
                  
                  let urls = info.images.map { $0.url }
