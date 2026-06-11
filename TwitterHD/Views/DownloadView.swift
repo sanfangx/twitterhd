@@ -48,6 +48,13 @@ struct DownloadView: View {
                     Image(systemName: "link").foregroundColor(.secondary)
                     TextField("粘贴推文链接...", text: $tweetURL)
                         .textFieldStyle(.plain).autocapitalization(.none).disableAutocorrection(true)
+                    // 粘贴按钮
+                    Button {
+                        if let str = UIPasteboard.general.string { tweetURL = str }
+                    } label: {
+                        Image(systemName: "doc.on.clipboard").foregroundColor(.blue)
+                    }
+                    .disabled(tweetURL.isEmpty == false)
                     if !tweetURL.isEmpty {
                         Button { tweetURL = "" } label: {
                             Image(systemName: "xmark.circle.fill").foregroundColor(.secondary)
@@ -67,6 +74,7 @@ struct DownloadView: View {
                     .frame(maxWidth: .infinity).frame(height: 44)
                     .background(tweetURL.isEmpty || isFetching || isDownloading ? Color.gray : Color.blue)
                     .foregroundColor(.white).cornerRadius(10)
+                    .contentShape(Rectangle())
                     .disabled(tweetURL.isEmpty || isFetching || isDownloading)
                     
                     if !imageItems.isEmpty {
@@ -193,7 +201,7 @@ struct DownloadView: View {
                 }
                 await MainActor.run {
                     imageItems = items
-                    selectedIndices = Set(0..<items.count)
+                    selectedIndices = []
                     progressText = "找到 \(items.count) 张图片，请选择后下载"
                 }
             } catch {
