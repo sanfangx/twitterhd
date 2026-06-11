@@ -55,12 +55,39 @@
      
     /// 获取推文信息
     func fetchTweet(url tweetUrl: String) async throws -> TweetInfo {
-        // 优先使用 syndication API（更可靠，不需要 Cookie）
+        // 1. syndication API（最快）
         if let result = try? await fetchViaSyndication(url: tweetUrl) {
             return result
         }
-        // 后备：解析推文页面 HTML（需要登录 Cookie）
-        return try await fetchViaPage(url: tweetUrl)
+        // 2. 解析推文页面 HTML
+        if let result = try? await fetchViaPage(url: tweetUrl) {
+            return result
+        }
+        // 3. WKWebView + 读 DOM（最可靠，但最慢）
+        return try await fetchViaWebView(url: tweetUrl)
+    }
+    
+    /// 通过隐藏 WKWebView + JS 注入获取图片（最后手段）
+    private func fetchViaWebView(url tweetUrl: String) async throws -> TweetInfo {
+        guard let tweetId = extractTweetId(from: tweetUrl) else { throw TwitterError.invalidURL }
+        guard let pageURL = URL(string: tweetUrl) else { throw TwitterError.invalidURL }
+        
+        let urls = try await MainActor.run {
+            let fetcher = TweetPageFetcher()
+            return try await fetcher.fetchImageURLs(from: pageURL)
+        }
+        
+        guard !urls.isEmpty else { throw TwitterError.noImagesFound("webview: no images in DOM") }
+        
+        let images = urls.reduce(into: [ImageInfo]()) { r, url in
+            if let u = URL(string: url) {
+                r.append(ImageInfo(url: u, width: 0, height: 0))
+            }
+        }
+        
+        return TweetInfo(tweetId: tweetId, username: "unknown",
+                        displayName: nil, tweetText: nil,
+                        createdAt: Date(), images: images)
     }
     
     /// 通过 syndication API 获取推文（不需要登录）
