@@ -92,9 +92,13 @@
      
      // MARK: - 解析 HTML
      
-     private func parseTweetPage(html: String, tweetId: String, sourceUrl: String) throws -> TweetInfo {
-         // 方法1: 解析 __NEXT_DATA__ JSON
-         if let nextDataJSON = extractJSON(from: html, scriptId: "__NEXT_DATA__"),
+    private func parseTweetPage(html: String, tweetId: String, sourceUrl: String) throws -> TweetInfo {
+        let hasNextData = html.contains("__NEXT_DATA__")
+        let hasMediaUrl = html.contains("media_url_https")
+        let hasPbs = html.contains("pbs.twimg.com")
+        
+        // 方法1: 解析 __NEXT_DATA__ JSON
+        if let nextDataJSON = extractJSON(from: html, scriptId: "__NEXT_DATA__"),
             let data = nextDataJSON.data(using: .utf8),
             let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
              
@@ -127,21 +131,23 @@
                  )
              }
          }
-         
-         // 方法2: 直接从 HTML 中提取 pbs.twimg.com 图片 URL（兜底）
-         let imgURLs = extractImageURLsFromHTML(html)
-         if !imgURLs.isEmpty {
+        
+        // 方法2: 直接从 HTML 中提取 pbs.twimg.com 图片 URL（兜底）
+        let imgURLs = extractImageURLsFromHTML(html)
+        if !imgURLs.isEmpty {
              let unique = Array(Set(imgURLs)).map { origURL(from: $0) }
              let images = unique.map { ImageInfo(url: $0, width: 0, height: 0) }
              return TweetInfo(tweetId: tweetId, username: "unknown",
                              displayName: nil, tweetText: nil,
                              createdAt: Date(), images: images)
          }
-         
-         throw TwitterError.noImagesFound
-     }
-     
-     // MARK: - JSON 解析辅助
+        
+        throw TwitterError.noImagesFound(
+            "next_data=\(hasNextData) media_url=\(hasMediaUrl) pbs=\(hasPbs) page_size=\(html.count)"
+        )
+    }
+    
+    // MARK: - JSON 解析辅助
      
     private func extractJSON(from html: String, scriptId: String) -> String? {
         let pattern = #"<script id="\#(scriptId)"[^>]*type="application/json"[^>]*>([\s\S]*?)</script>"#
@@ -260,16 +266,16 @@
  
  // MARK: - Errors
  
- enum TwitterError: LocalizedError {
-     case invalidURL, fetchFailed, parseFailed, noImagesFound, notLoggedIn
-     
-     var errorDescription: String? {
-         switch self {
-         case .invalidURL: return "无效的推文链接"
-         case .fetchFailed: return "获取推文失败"
-         case .parseFailed: return "解析推文失败"
-         case .noImagesFound: return "该推文没有找到图片"
-         case .notLoggedIn: return "请先登录 X 账号"
-         }
-     }
- }
+enum TwitterError: LocalizedError {
+    case invalidURL, fetchFailed, parseFailed, noImagesFound(String), notLoggedIn
+    
+    var errorDescription: String? {
+        switch self {
+        case .invalidURL: return "无效的推文链接"
+        case .fetchFailed: return "获取推文失败"
+        case .parseFailed: return "解析推文失败"
+        case .noImagesFound(let detail): return "没有找到图片\n[诊断] \(detail)"
+        case .notLoggedIn: return "请先登录 X 账号"
+        }
+    }
+}
