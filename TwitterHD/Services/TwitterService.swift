@@ -183,7 +183,7 @@
         
         let hasPbsMedia = html.contains("pbs.twimg.com/media/")
         throw TwitterError.noImagesFound(
-            "next_data=\\(hasNextData) media_url=\\(hasMediaUrl) pbs=\\(hasPbs) pbs_media=\\(hasPbsMedia) page_size=\\(html.count)"
+            "nd=" + String(hasNextData) + " mu=" + String(hasMediaUrl) + " pb=" + String(hasPbs) + " pm=" + String(hasPbsMedia) + " sz=" + String(html.count)
         )
     }
     
