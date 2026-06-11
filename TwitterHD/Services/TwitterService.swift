@@ -70,11 +70,10 @@
     /// 通过隐藏 WKWebView + JS 注入获取图片（最后手段）
     private func fetchViaWebView(url tweetUrl: String) async throws -> TweetInfo {
         guard let tweetId = extractTweetId(from: tweetUrl) else { throw TwitterError.invalidURL }
-        guard let pageURL = URL(string: tweetUrl) else { throw TwitterError.invalidURL }
+        guard let pageURL = URL(string: tweetUrl.hasPrefix("http") ? tweetUrl : "https://x.com/\(tweetUrl)") else { throw TwitterError.invalidURL }
         
         let urls = try await MainActor.run {
-            let fetcher = TweetPageFetcher()
-            return try await fetcher.fetchImageURLs(from: pageURL)
+            return try await WebViewManager.shared.extractImages(from: pageURL)
         }
         
         guard !urls.isEmpty else { throw TwitterError.noImagesFound("webview: no images in DOM") }
