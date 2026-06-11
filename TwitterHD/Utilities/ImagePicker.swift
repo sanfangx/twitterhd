@@ -1,4 +1,4 @@
-import SwiftUI
+﻿import SwiftUI
 import PhotosUI
  
 struct ImagePicker: UIViewControllerRepresentable {
@@ -24,13 +24,16 @@ struct ImagePicker: UIViewControllerRepresentable {
         
         func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
             guard let result = results.first else {
-                parent.dismiss()
+                self.parent.dismiss()
                 return
             }
             result.itemProvider.loadObject(ofClass: UIImage.self) { image, _ in
                 if let uiImage = image as? UIImage,
                    let data = uiImage.jpegData(compressionQuality: 0.7) {
-                    DispatchQueue.main.async { self.parent.imageData = data }
+                    DispatchQueue.main.async {
+                        self.parent.imageData = data
+                        self.parent.dismiss()
+                    }
                 }
             }
         }

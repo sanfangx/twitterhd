@@ -3,6 +3,7 @@
  struct SettingsView: View {
     @ObservedObject private var bg = BackgroundManager.shared
     @State private var showImagePicker = false
+    @State private var pickedImageData: Data?
      @AppStorage("autoSave") private var autoSave = true
      @AppStorage("imageQuality") private var imageQuality = "orig"
      @StateObject private var authService = AuthService.shared
@@ -117,6 +118,12 @@
                  Text("将删除所有下载记录，此操作不可撤销")
              }
          }
+        .sheet(isPresented: $showImagePicker) {
+            ImagePicker(imageData: $pickedImageData)
+        }
+        .onChange(of: pickedImageData) { data in
+            if let d = data, let img = UIImage(data: d) { BackgroundManager.shared.save(img) }
+        }
      }
      
      private func clearHistory() {
