@@ -1,15 +1,13 @@
- import SwiftUI
+import SwiftUI
  
- @main
- struct TwitterHDApp: App {
-     
-     init() {
-         _ = CoreDataManager.shared
-     }
-     
-     var body: some Scene {
-         WindowGroup {
-             ContentView()
-         }
-     }
- }
+@main
+struct TwitterHDApp: App {
+    init() { _ = CoreDataManager.shared }
+    
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .environmentObject(BackgroundManager.shared)
+        }
+    }
+}
