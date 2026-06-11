@@ -1,7 +1,7 @@
 import SwiftUI
  
 struct ContentView: View {
-    @ObservedObject private var bg = BackgroundManager.shared
+    @State private var backgroundImage: UIImage? = nil
     
     var body: some View {
         TabView {
@@ -12,13 +12,19 @@ struct ContentView: View {
             SettingsView()
                 .tabItem { Label("设置", systemImage: "gearshape") }
         }
-        .background {
-            if let img = bg.image {
-                Image(uiImage: img)
-                    .resizable()
-                    .scaledToFill()
-                    .ignoresSafeArea()
+        .background(
+            Group {
+                if let img = backgroundImage {
+                    Image(uiImage: img)
+                        .resizable()
+                        .scaledToFill()
+                        .ignoresSafeArea()
+                }
             }
+        )
+        .onAppear { backgroundImage = BackgroundManager.shared.image }
+        .onReceive(BackgroundManager.shared.$image) { img in
+            withAnimation(.easeInOut(duration: 0.3)) { backgroundImage = img }
         }
     }
 }
