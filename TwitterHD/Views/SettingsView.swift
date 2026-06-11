@@ -1,6 +1,8 @@
  import SwiftUI
  
  struct SettingsView: View {
+    @ObservedObject private var bg = BackgroundManager.shared
+    @State private var showImagePicker = false
      @AppStorage("autoSave") private var autoSave = true
      @AppStorage("imageQuality") private var imageQuality = "orig"
      @StateObject private var authService = AuthService.shared
@@ -64,6 +66,17 @@
                      }
                  }
                  
+                // MARK: 背景
+                Section("背景图片") {
+                    if let img = bg.image {
+                        Image(uiImage: img)
+                            .resizable().scaledToFill().frame(height: 120).clipped().cornerRadius(8)
+                    }
+                    Button("选择图片") { showImagePicker = true }
+                    if bg.hasImage {
+                        Button("清除背景", role: .destructive) { bg.clear() }
+                    }
+                }
                  // MARK: 关于
                  Section {
                      HStack {
