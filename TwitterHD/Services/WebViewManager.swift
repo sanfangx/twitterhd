@@ -11,13 +11,39 @@ class WebViewManager: NSObject, ObservableObject {
     private var pageContinuation: CheckedContinuation<[String], Error>?
     
     private override init() {
+        let js = """
+        function scan() {
+            let res = [];
+            document.querySelectorAll('img[src*="pbs.twimg.com/media/"]').forEach(img => {
+                try {
+                    let u = new URL(img.src);
+                    let f = new URLSearchParams(u.search).get('format') || 'jpg';
+                    res.push(u.origin + u.pathname + "?format=" + f + "&name=orig");
+                } catch(e) {}
+            });
+            if (res.length > 0)
+                window.webkit.messageHandlers.scanner.postMessage(Array.from(new Set(res)));
+        }
+        setInterval(() => {
+            document.querySelectorAll('div[role="button"]').forEach(btn => {
+                if(btn.innerText.includes("\\u663E\\u793A") || btn.innerText.includes("View")) btn.click();
+            });
+            scan();
+        }, 1500);
+        """
+        
+        let userScript = WKUserScript(source: js, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
+        let cc = WKUserContentController()
+        cc.addUserScript(userScript)
+        
         let config = WKWebViewConfiguration()
+        config.userContentController = cc
         config.websiteDataStore = WKWebsiteDataStore.default()
         let pref = WKWebpagePreferences()
         pref.allowsContentJavaScript = true
         config.defaultWebpagePreferences = pref
-        config.preferences.javaScriptCanOpenWindowsAutomatically = true
-        config.applicationNameForUserAgent = "Version/17.0 Safari/605.1.15"
+        config.preferences.javaScriptCanOpenWindowsAutomatically = false
+        config.applicationNameForUserAgent = "Version/17.4 Mobile/15E148 Safari/604.1"
         
         let wv = WKWebView(frame: .zero, configuration: config)
         wv.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -25,6 +51,8 @@ class WebViewManager: NSObject, ObservableObject {
         
         super.init()
         wv.navigationDelegate = self
+        cc.add(self, name: "scanner")
+        
         checkLoginState()
     }
     
@@ -47,29 +75,6 @@ class WebViewManager: NSObject, ObservableObject {
             }
         }
     }
-   
-    private func handlePageLoaded() {
-        guard let cont = pageContinuation else { return }
-        let js = """
-        JSON.stringify(
-          Array.from(document.querySelectorAll('[data-testid="tweetPhoto"] img'))
-            .map(i => i.src)
-            .filter(s => s && s.includes('pbs.twimg.com'))
-            .map(s => s.split('?')[0] + '?name=orig')
-        )
-        """
-        webView.evaluateJavaScript(js) { [weak self] result, error in
-            guard let self = self, let cont = self.pageContinuation else { return }
-            if let json = result as? String,
-                      let data = json.data(using: .utf8),
-                      let urls = try? JSONSerialization.jsonObject(with: data) as? [String],
-                      !urls.isEmpty {
-                cont.resume(returning: urls)
-                self.pageContinuation = nil
-            }
-            // 没找到图片不 resolve，等下一次 didFinish 或超时
-        }
-    }
 }
  
 extension WebViewManager: WKNavigationDelegate {
@@ -77,7 +82,6 @@ extension WebViewManager: WKNavigationDelegate {
         Task { @MainActor in
             self.checkLoginState()
             await AuthService.shared.saveCookies(from: wv)
-            self.handlePageLoaded()
         }
     }
     
@@ -93,6 +97,17 @@ extension WebViewManager: WKNavigationDelegate {
         if ns.domain == "WebKitErrorDomain" && ns.code == 102 { return }
         Task { @MainActor in
             self.pageContinuation?.resume(throwing: e)
+            self.pageContinuation = nil
+        }
+    }
+}
+ 
+extension WebViewManager: WKScriptMessageHandler {
+    nonisolated func userContentController(_ c: WKUserContentController, didReceive msg: WKScriptMessage) {
+        guard msg.name == "scanner" else { return }
+        Task { @MainActor in
+            guard let urls = msg.body as? [String], !urls.isEmpty else { return }
+            self.pageContinuation?.resume(returning: urls)
             self.pageContinuation = nil
         }
     }
