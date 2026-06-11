@@ -52,9 +52,9 @@ struct DownloadView: View {
                     Button {
                         if let str = UIPasteboard.general.string { tweetURL = str }
                     } label: {
-                        Image(systemName: "doc.on.clipboard").foregroundColor(.blue)
+                        Image(systemName: "doc.on.clipboard").font(.title2).foregroundColor(.blue)
                     }
-                    .disabled(tweetURL.isEmpty == false)
+                    
                     if !tweetURL.isEmpty {
                         Button { tweetURL = "" } label: {
                             Image(systemName: "xmark.circle.fill").foregroundColor(.secondary)
@@ -68,7 +68,7 @@ struct DownloadView: View {
                         if isFetching {
                             ProgressView().progressViewStyle(.circular).tint(.white)
                         } else {
-                            Label("获取图片", systemImage: "photo.on.rectangle")
+                            Label("获取图片", systemImage: "photo")
                         }
                     }
                     .frame(maxWidth: .infinity).frame(height: 44)
