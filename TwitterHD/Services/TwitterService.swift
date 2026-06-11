@@ -143,9 +143,9 @@
      
      // MARK: - JSON 解析辅助
      
-     private func extractJSON(from html: String, scriptId: String) -> String? {
-         let pattern = #"<script id=\"" + scriptId + #""[^>]*type="application/json"[^>]*>([\s\S]*?)</script>"#
-         guard let range = html.range(of: pattern, options: .regularExpression) else { return nil }
+    private func extractJSON(from html: String, scriptId: String) -> String? {
+        let pattern = #"<script id="\#(scriptId)"[^>]*type="application/json"[^>]*>([\s\S]*?)</script>"#
+        guard let range = html.range(of: pattern, options: .regularExpression) else { return nil }
          let script = String(html[range])
          let start = script.firstIndex(of: ">") ?? script.startIndex
          let end = script.lastIndex(of: "<") ?? script.endIndex
