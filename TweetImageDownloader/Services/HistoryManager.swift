@@ -1,5 +1,12 @@
 import Foundation
 
+/// 作者分类历史记录组
+public struct AuthorHistoryGroup: Identifiable {
+    public var id: String { author }
+    public let author: String
+    public let items: [TweetHistoryItem]
+}
+
 /// 解析历史记录管理器 (长期持久化，按作者自动归类)
 public class HistoryManager: ObservableObject {
     public static let shared = HistoryManager()
@@ -46,13 +53,6 @@ public class HistoryManager: ObservableObject {
         }
     }
     
-/// 作者分类历史记录组
-public struct AuthorHistoryGroup: Identifiable {
-    public var id: String { author }
-    public let author: String
-    public let items: [TweetHistoryItem]
-}
-
     /// 按相同推特作者将历史记录自动分组，并按最后活动时间降序排列
     public func groupedByAuthor() -> [AuthorHistoryGroup] {
         let groupedDictionary = Dictionary(grouping: historyItems, by: { $0.authorUsername })
