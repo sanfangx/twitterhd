@@ -18,8 +18,7 @@ public struct HistoryView: View {
                     emptyHistoryView
                 } else {
                     List {
-                        let grouped = historyManager.groupedByAuthor()
-                        ForEach(grouped) { group in
+                        ForEach(historyManager.groupedByAuthor()) { group in
                             Section {
                                 ForEach(group.items) { item in
                                     historyRowView(for: item)
