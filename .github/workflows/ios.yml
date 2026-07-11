@@ -32,14 +32,17 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
-            CONFIGURATION_BUILD_DIR=build/Release-iphoneos | tee build.log || (echo "=== COMPILER ERRORS ===" && grep -E "error:|warning:" build.log && exit 1)
+            CONFIGURATION_BUILD_DIR=build/Release-iphoneos | tee build.log
 
-      - name: Upload Build Log on Failure
+      - name: Commit Build Log on Failure
         if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Build-Failure-Log
-          path: build.log
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          cp build.log build_error.log
+          git add -f build_error.log
+          git commit -m "ci: upload build_error.log [skip ci]" || true
+          git push origin HEAD:feature/bg-and-history || true
 
       - name: Package .ipa File (Payload)
         run: |
