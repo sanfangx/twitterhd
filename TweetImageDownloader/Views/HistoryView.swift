@@ -19,7 +19,7 @@ public struct HistoryView: View {
                 } else {
                     List {
                         let grouped = historyManager.groupedByAuthor()
-                        ForEach(grouped, id: \.author) { group in
+                        ForEach(grouped) { group in
                             Section {
                                 ForEach(group.items) { item in
                                     historyRowView(for: item)

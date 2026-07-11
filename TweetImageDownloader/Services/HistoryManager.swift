@@ -46,12 +46,19 @@ public class HistoryManager: ObservableObject {
         }
     }
     
+/// 作者分类历史记录组
+public struct AuthorHistoryGroup: Identifiable {
+    public var id: String { author }
+    public let author: String
+    public let items: [TweetHistoryItem]
+}
+
     /// 按相同推特作者将历史记录自动分组，并按最后活动时间降序排列
-    public func groupedByAuthor() -> [(author: String, items: [TweetHistoryItem])] {
+    public func groupedByAuthor() -> [AuthorHistoryGroup] {
         let groupedDictionary = Dictionary(grouping: historyItems, by: { $0.authorUsername })
         return groupedDictionary.map { (key, value) in
             let sortedItems = value.sorted(by: { $0.timestamp > $1.timestamp })
-            return (author: key, items: sortedItems)
+            return AuthorHistoryGroup(author: key, items: sortedItems)
         }.sorted { group1, group2 in
             let date1 = group1.items.first?.timestamp ?? Date.distantPast
             let date2 = group2.items.first?.timestamp ?? Date.distantPast
