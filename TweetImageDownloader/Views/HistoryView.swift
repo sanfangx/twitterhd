@@ -1,10 +1,13 @@
 import SwiftUI
 
-/// 历史记录视图 (按相同推文作者自动聚合展示)
+/// 历史记录视图 (按相同推文作者自动聚合展示，可点击作者名折叠/展开)
 public struct HistoryView: View {
     @ObservedObject private var historyManager = HistoryManager.shared
     @Binding var selectedTab: Int
     @ObservedObject var downloaderViewModel: DownloaderViewModel
+    
+    // 记录哪些作者的记录已展开
+    @State private var expandedAuthors: Set<String> = []
     
     public init(selectedTab: Binding<Int>, downloaderViewModel: DownloaderViewModel) {
         self._selectedTab = selectedTab
@@ -19,31 +22,7 @@ public struct HistoryView: View {
                 } else {
                     List {
                         ForEach(historyManager.groupedByAuthor()) { group in
-                            Section {
-                                ForEach(group.items) { item in
-                                    historyRowView(for: item)
-                                }
-                                .onDelete { indexSet in
-                                    for index in indexSet {
-                                        historyManager.delete(item: group.items[index])
-                                    }
-                                }
-                            } header: {
-                                HStack {
-                                    Image(systemName: "person.circle.fill")
-                                        .foregroundColor(.blue)
-                                    Text("@\(group.author)")
-                                        .font(.headline)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(.primary)
-                                        .textCase(nil)
-                                    Spacer()
-                                    Text("\(group.items.count) 条记录")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                                .padding(.vertical, 4)
-                            }
+                            authorSection(for: group)
                         }
                     }
                     .listStyle(.insetGrouped)
@@ -55,6 +34,7 @@ public struct HistoryView: View {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button(role: .destructive) {
                             historyManager.clearAll()
+                            expandedAuthors.removeAll()
                         } label: {
                             Image(systemName: "trash")
                                 .foregroundColor(.red)
@@ -65,9 +45,68 @@ public struct HistoryView: View {
         }
     }
     
+    // MARK: - 作者分区（可折叠）
+    @ViewBuilder
+    private func authorSection(for group: AuthorHistoryGroup) -> some View {
+        let isExpanded = expandedAuthors.contains(group.author)
+        
+        Section {
+            if isExpanded {
+                ForEach(group.items) { item in
+                    historyRowView(for: item)
+                }
+                .onDelete { indexSet in
+                    for index in indexSet {
+                        historyManager.delete(item: group.items[index])
+                    }
+                }
+            }
+        } header: {
+            Button {
+                withAnimation(.easeInOut(duration: 0.22)) {
+                    if isExpanded {
+                        expandedAuthors.remove(group.author)
+                    } else {
+                        expandedAuthors.insert(group.author)
+                    }
+                }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "person.circle.fill")
+                        .foregroundColor(.blue)
+                        .font(.subheadline)
+                    
+                    Text("@\(group.author)")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+                        .textCase(nil)
+                    
+                    Spacer()
+                    
+                    Text("\(group.items.count) 条")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.secondary.opacity(0.12))
+                        .clipShape(Capsule())
+                    
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .animation(.easeInOut(duration: 0.22), value: isExpanded)
+                }
+                .padding(.vertical, 4)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        }
+    }
+    
+    // MARK: - 单条链接行
     private func historyRowView(for item: TweetHistoryItem) -> some View {
         Button {
-            // 点击历史链接自动带入首页并切换至抓取页面
             downloaderViewModel.inputURLText = item.urlString
             PhotoLibraryManager.shared.triggerTapHaptic()
             selectedTab = 0
@@ -98,6 +137,7 @@ public struct HistoryView: View {
         }
     }
     
+    // MARK: - 空状态
     private var emptyHistoryView: some View {
         VStack(spacing: 16) {
             Image(systemName: "clock.arrow.circlepath")

@@ -1,13 +1,10 @@
 import SwiftUI
 import WebKit
-import PhotosUI
 
-/// 设置界面：支持打开后台网页进行 Twitter/X 登录与会话管理、更换背景以及介绍快捷指令使用方法
+/// 设置界面：支持打开后台网页进行 Twitter/X 登录与会话管理以及介绍快捷指令使用方法
 public struct SettingsView: View {
     @State private var showLoginModal: Bool = false
     @State private var cacheClearedAlert: Bool = false
-    @State private var selectedPhotoItem: PhotosPickerItem?
-    @ObservedObject private var bgManager = AppBackgroundManager.shared
     
     public init() {}
     
@@ -37,48 +34,6 @@ public struct SettingsView: View {
                     Text("账号与鉴权")
                 } footer: {
                     Text("登录状态保存在底层 WKWebView Cookie 中，App 重新启动依然有效。")
-                }
-                
-                Section {
-                    PhotosPicker(selection: $selectedPhotoItem, matching: .images) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "photo.on.rectangle.angled")
-                                .font(.title2)
-                                .foregroundColor(.purple)
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("从相册挑选应用背景图")
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                                    .foregroundColor(.primary)
-                                Text(bgManager.customBackgroundImage != nil ? "已设置专属相册背景" : "当前使用默认系统样式")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                        .padding(.vertical, 4)
-                    }
-                    .onChange(of: selectedPhotoItem) { newItem in
-                        guard let newItem = newItem else { return }
-                        Task {
-                            if let data = try? await newItem.loadTransferable(type: Data.self) {
-                                bgManager.saveCustomBackground(imageData: data)
-                            }
-                        }
-                    }
-                    
-                    if bgManager.customBackgroundImage != nil {
-                        Button(role: .destructive) {
-                            bgManager.clearCustomBackground()
-                            selectedPhotoItem = nil
-                        } label: {
-                            HStack {
-                                Image(systemName: "arrow.counterclockwise")
-                                Text("恢复默认系统背景")
-                            }
-                        }
-                    }
-                } header: {
-                    Text("界面外观与个性化背景")
                 }
                 
                 Section {

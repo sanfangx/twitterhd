@@ -18,7 +18,7 @@
 		1A0000112C00000000000009 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000122C00000000000009 /* SettingsView.swift */; };
 		1A0000132C0000000000000A /* LoginWebViewModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000142C0000000000000A /* LoginWebViewModal.swift */; };
 		1A0000152C0000000000000B /* ParseAndDownloadIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000162C0000000000000B /* ParseAndDownloadIntent.swift */; };
-		1A0000802C00000000000001 /* AppBackgroundManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000812C00000000000001 /* AppBackgroundManager.swift */; };
+
 		1A0000822C00000000000002 /* TweetHistoryItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000832C00000000000002 /* TweetHistoryItem.swift */; };
 		1A0000842C00000000000003 /* HistoryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000852C00000000000003 /* HistoryManager.swift */; };
 		1A0000862C00000000000004 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000872C00000000000004 /* HistoryView.swift */; };
@@ -36,7 +36,7 @@
 		1A0000122C00000000000009 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		1A0000142C0000000000000A /* LoginWebViewModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginWebViewModal.swift; sourceTree = "<group>"; };
 		1A0000162C0000000000000B /* ParseAndDownloadIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParseAndDownloadIntent.swift; sourceTree = "<group>"; };
-		1A0000812C00000000000001 /* AppBackgroundManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppBackgroundManager.swift; sourceTree = "<group>"; };
+
 		1A0000832C00000000000002 /* TweetHistoryItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweetHistoryItem.swift; sourceTree = "<group>"; };
 		1A0000852C00000000000003 /* HistoryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryManager.swift; sourceTree = "<group>"; };
 		1A0000872C00000000000004 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
