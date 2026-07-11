@@ -194,6 +194,10 @@
 				1A0000112C00000000000009 /* SettingsView.swift in Sources */,
 				1A0000132C0000000000000A /* LoginWebViewModal.swift in Sources */,
 				1A0000152C0000000000000B /* ParseAndDownloadIntent.swift in Sources */,
+				1A0000802C00000000000001 /* AppBackgroundManager.swift in Sources */,
+				1A0000822C00000000000002 /* TweetHistoryItem.swift in Sources */,
+				1A0000842C00000000000003 /* HistoryManager.swift in Sources */,
+				1A0000862C00000000000004 /* HistoryView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
