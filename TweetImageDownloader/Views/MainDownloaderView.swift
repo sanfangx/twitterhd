@@ -13,46 +13,50 @@ public struct MainDownloaderView: View {
     
     public var body: some View {
         NavigationStack {
-            ZStack(alignment: .bottom) {
-                VStack(spacing: 0) {
-                    // 顶栏输入与解析操作区
-                    topAddressBarView
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                        .background(Color(.systemBackground))
-                        .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2)
-                        .zIndex(1)
-                    
-                    // 错误提示区
-                    if let errorMessage = viewModel.errorMessage {
-                        errorBanner(text: errorMessage)
+            ZStack(alignment: .top) {
+                ZStack(alignment: .bottom) {
+                    VStack(spacing: 0) {
+                        // 顶栏输入与解析操作区
+                        topAddressBarView
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .background(Color(.systemBackground))
+                            .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2)
+                            .zIndex(1)
+                        
+                        // 错误提示区
+                        if let errorMessage = viewModel.errorMessage {
+                            errorBanner(text: errorMessage)
+                        }
+                        
+                        // 中间画质网格展示区
+                        ScrollView {
+                            if viewModel.isParsing {
+                                loadingStateView
+                            } else if viewModel.images.isEmpty {
+                                emptyStateView
+                            } else {
+                                imageGridView
+                            }
+                        }
                     }
                     
-                    // 中间画质网格展示区
-                    ScrollView {
-                        if viewModel.isParsing {
-                            loadingStateView
-                        } else if viewModel.images.isEmpty {
-                            emptyStateView
-                        } else {
-                            imageGridView
-                        }
+                    // 底部浮动全选与下载控制条
+                    if !viewModel.images.isEmpty {
+                        bottomActionBarView
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
                     }
                 }
                 
-                // 底部浮动全选与下载控制条
-                if !viewModel.images.isEmpty {
-                    bottomActionBarView
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                // 顶部轻量免打扰自动消失的成功提示 Toast
+                if viewModel.showSuccessBanner {
+                    successToastBanner
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .zIndex(10)
                 }
             }
             .navigationTitle("推文原图抓取")
             .navigationBarTitleDisplayMode(.inline)
-            .alert("已成功保存到相册", isPresented: $viewModel.showSuccessBanner) {
-                Button("好的", role: .cancel) {}
-            } message: {
-                Text("成功将 \(viewModel.downloadedCountResult) 张 4K 原图保存至系统相册。")
-            }
         }
     }
     
@@ -229,6 +233,26 @@ public struct MainDownloaderView: View {
         .padding(.horizontal, 16)
         .padding(.top, 8)
     }
+    
+    private var successToastBanner: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "checkmark.circle.fill")
+                .foregroundColor(.green)
+                .font(.title3)
+            Text("成功将 \(viewModel.downloadedCountResult) 张原图保存至系统相册！")
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundColor(.primary)
+            Spacer()
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
+    }
 }
 
 /// 单张推文卡片预览组件
@@ -237,7 +261,7 @@ private struct TweetImageCardView: View {
     
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            // 预览图加载 (使用预览分辨率预览，保障加载速度)
+            // 预览图加载 (利用等比居中裁剪 scaledToFill 保障任何非正方形原图都不会拉伸变形)
             AsyncImage(url: item.previewURL) { phase in
                 switch phase {
                 case .empty:
@@ -246,11 +270,13 @@ private struct TweetImageCardView: View {
                         .aspectRatio(1, contentMode: .fit)
                         .overlay(ProgressView())
                 case .success(let image):
-                    image
-                        .resizable()
-                        .aspectRatio(1, contentMode: .fill)
-                        .frame(minWidth: 0, maxWidth: .infinity)
+                    Color.clear
                         .aspectRatio(1, contentMode: .fit)
+                        .overlay(
+                            image
+                                .resizable()
+                                .scaledToFill()
+                        )
                         .clipped()
                 case .failure:
                     Rectangle()

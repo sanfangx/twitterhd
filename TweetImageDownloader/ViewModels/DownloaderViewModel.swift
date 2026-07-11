@@ -99,6 +99,12 @@ public final class DownloaderViewModel: ObservableObject {
                 withAnimation {
                     self.showSuccessBanner = true
                 }
+                Task {
+                    try? await Task.sleep(nanoseconds: 2_200_000_000)
+                    withAnimation {
+                        self.showSuccessBanner = false
+                    }
+                }
             } catch {
                 self.isDownloading = false
                 self.downloadProgressText = nil

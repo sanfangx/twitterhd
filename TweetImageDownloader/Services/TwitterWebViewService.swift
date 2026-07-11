@@ -72,8 +72,8 @@ public final class TwitterWebViewService: NSObject, ObservableObject {
         // 1. 加载目标推文链接页面
         try await loadURL(cleanedURL)
         
-        // 2. 轮询等待 SPA 卡片元素生成（最多等 8 秒）
-        try await waitForTweetCardElement(maxAttempts: 16, delayMilliseconds: 500)
+        // 2. 高频短间隔轮询等待推文卡片与图片元素生成（150ms/次，极速侦测）
+        try await waitForTweetCardElement(maxAttempts: 35, delayMilliseconds: 150)
         
         // 3. 执行 JS 提取逻辑
         guard let jsonString = try await webView.evaluateJavaScript(TwitterExtractorJS.extractionScript) as? String,
@@ -120,13 +120,13 @@ public final class TwitterWebViewService: NSObject, ObservableObject {
         }
     }
     
-    /// 等待页面出现推文卡片容器
+    /// 等待页面出现推文卡片容器或配图元素
     private func waitForTweetCardElement(maxAttempts: Int, delayMilliseconds: UInt64) async throws {
         for _ in 0..<maxAttempts {
-            let checkJS = "document.querySelectorAll('[data-testid=\"cellInnerDiv\"]').length > 0"
+            let checkJS = "(document.querySelectorAll('img[src*=\"twimg.com/media/\"]').length > 0) || (document.querySelectorAll('[data-testid=\"cellInnerDiv\"]').length > 0)"
             if let found = try? await webView.evaluateJavaScript(checkJS) as? Bool, found {
-                // 再额外停留 400ms 以便页面内异步加载的 img 节点稳定完成渲染
-                try? await Task.sleep(nanoseconds: 400_000_000)
+                // 仅等待 150ms 确保页面配图列表稳定
+                try? await Task.sleep(nanoseconds: 150_000_000)
                 return
             }
             try await Task.sleep(nanoseconds: delayMilliseconds * 1_000_000)

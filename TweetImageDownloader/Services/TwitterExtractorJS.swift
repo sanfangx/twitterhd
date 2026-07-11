@@ -70,9 +70,9 @@ public enum TwitterExtractorJS {
                         }
                         seenUrls.add(baseUrl);
                         
-                        // 构造中清晰度预览图与 4K 最高分辨率原图 URL
+                        // 构造中等清晰度预览图与原始最高分辨率 (name=orig) 原图 URL
                         var previewURL = baseUrl + (baseUrl.indexOf('?') !== -1 ? '&name=medium' : '?name=medium');
-                        var originalURL = baseUrl + (baseUrl.indexOf('?') !== -1 ? '&name=4096x4096' : '?name=4096x4096');
+                        var originalURL = baseUrl + (baseUrl.indexOf('?') !== -1 ? '&name=orig' : '?name=orig');
                         
                         extractedImages.push({
                             "previewURL": previewURL,
