@@ -2,6 +2,7 @@ import SwiftUI
 import WebKit
 
 /// 包装底层常驻 WKWebView，使其可在“设置”页面中弹出以展示 Twitter/X 网页登录界面
+@MainActor
 public struct LoginWebViewModal: UIViewRepresentable {
     public let webView: WKWebView
     public let initialURL: URL

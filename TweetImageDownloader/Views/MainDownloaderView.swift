@@ -9,7 +9,7 @@ public struct MainDownloaderView: View {
         GridItem(.flexible(), spacing: 12)
     ]
     
-    public init(viewModel: DownloaderViewModel = DownloaderViewModel()) {
+    public init(viewModel: DownloaderViewModel) {
         self.viewModel = viewModel
     }
     
