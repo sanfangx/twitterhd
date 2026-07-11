@@ -1,0 +1,249 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1A0000012C00000000000001 /* TweetImageDownloaderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000022C00000000000001 /* TweetImageDownloaderApp.swift */; };
+		1A0000032C00000000000002 /* TweetImageItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000042C00000000000002 /* TweetImageItem.swift */; };
+		1A0000052C00000000000003 /* TwitterExtractorJS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000062C00000000000003 /* TwitterExtractorJS.swift */; };
+		1A0000072C00000000000004 /* TwitterWebViewService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000082C00000000000004 /* TwitterWebViewService.swift */; };
+		1A0000092C00000000000005 /* PhotoLibraryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000A2C00000000000005 /* PhotoLibraryManager.swift */; };
+		1A00000B2C00000000000006 /* DownloaderViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000C2C00000000000006 /* DownloaderViewModel.swift */; };
+		1A00000D2C00000000000007 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A00000E2C00000000000007 /* ContentView.swift */; };
+		1A00000F2C00000000000008 /* MainDownloaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000102C00000000000008 /* MainDownloaderView.swift */; };
+		1A0000112C00000000000009 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000122C00000000000009 /* SettingsView.swift */; };
+		1A0000132C0000000000000A /* LoginWebViewModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000142C0000000000000A /* LoginWebViewModal.swift */; };
+		1A0000152C0000000000000B /* ParseAndDownloadIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0000162C0000000000000B /* ParseAndDownloadIntent.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		1A0000022C00000000000001 /* TweetImageDownloaderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweetImageDownloaderApp.swift; sourceTree = "<group>"; };
+		1A0000042C00000000000002 /* TweetImageItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweetImageItem.swift; sourceTree = "<group>"; };
+		1A0000062C00000000000003 /* TwitterExtractorJS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwitterExtractorJS.swift; sourceTree = "<group>"; };
+		1A0000082C00000000000004 /* TwitterWebViewService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwitterWebViewService.swift; sourceTree = "<group>"; };
+		1A00000A2C00000000000005 /* PhotoLibraryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoLibraryManager.swift; sourceTree = "<group>"; };
+		1A00000C2C00000000000006 /* DownloaderViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloaderViewModel.swift; sourceTree = "<group>"; };
+		1A00000E2C00000000000007 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		1A0000102C00000000000008 /* MainDownloaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainDownloaderView.swift; sourceTree = "<group>"; };
+		1A0000122C00000000000009 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		1A0000142C0000000000000A /* LoginWebViewModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginWebViewModal.swift; sourceTree = "<group>"; };
+		1A0000162C0000000000000B /* ParseAndDownloadIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParseAndDownloadIntent.swift; sourceTree = "<group>"; };
+		1A0000182C0000000000000C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1A00001A2C0000000000000D /* TweetImageDownloader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TweetImageDownloader.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		1A0000202C00000000000010 = {
+			isa = PBXGroup;
+			children = (
+				1A0000212C00000000000011 /* TweetImageDownloader */,
+				1A0000222C00000000000012 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		1A0000212C00000000000011 /* TweetImageDownloader */ = {
+			isa = PBXGroup;
+			children = (
+				1A0000182C0000000000000C /* Info.plist */,
+				1A0000302C00000000000013 /* App */,
+				1A0000312C00000000000014 /* Models */,
+				1A0000322C00000000000015 /* Services */,
+				1A0000332C00000000000016 /* ViewModels */,
+				1A0000342C00000000000017 /* Views */,
+				1A0000352C00000000000018 /* Intents */,
+			);
+			path = TweetImageDownloader;
+			sourceTree = "<group>";
+		};
+		1A0000222C00000000000012 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1A00001A2C0000000000000D /* TweetImageDownloader.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		1A0000302C00000000000013 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				1A0000022C00000000000001 /* TweetImageDownloaderApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		1A0000312C00000000000014 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				1A0000042C00000000000002 /* TweetImageItem.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		1A0000322C00000000000015 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				1A0000062C00000000000003 /* TwitterExtractorJS.swift */,
+				1A0000082C00000000000004 /* TwitterWebViewService.swift */,
+				1A00000A2C00000000000005 /* PhotoLibraryManager.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		1A0000332C00000000000016 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				1A00000C2C00000000000006 /* DownloaderViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		1A0000342C00000000000017 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				1A00000E2C00000000000007 /* ContentView.swift */,
+				1A0000102C00000000000008 /* MainDownloaderView.swift */,
+				1A0000122C00000000000009 /* SettingsView.swift */,
+				1A0000142C0000000000000A /* LoginWebViewModal.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		1A0000352C00000000000018 /* Intents */ = {
+			isa = PBXGroup;
+			children = (
+				1A0000162C0000000000000B /* ParseAndDownloadIntent.swift */,
+			);
+			path = Intents;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1A0000402C00000000000020 /* TweetImageDownloader */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1A0000502C00000000000030 /* Build configuration list for PBXNativeTarget "TweetImageDownloader" */;
+			buildPhases = (
+				1A0000412C00000000000021 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TweetImageDownloader;
+			productName = TweetImageDownloader;
+			productReference = 1A00001A2C0000000000000D /* TweetImageDownloader.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		1A0000602C00000000000040 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+			};
+			buildConfigurationList = 1A0000612C00000000000041 /* Build configuration list for PBXProject "TweetImageDownloader" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = zh_CN;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				zh_CN,
+			);
+			mainGroup = 1A0000202C00000000000010;
+			productRefGroup = 1A0000222C00000000000012 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1A0000402C00000000000020 /* TweetImageDownloader */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1A0000412C00000000000021 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A0000012C00000000000001 /* TweetImageDownloaderApp.swift in Sources */,
+				1A0000032C00000000000002 /* TweetImageItem.swift in Sources */,
+				1A0000052C00000000000003 /* TwitterExtractorJS.swift in Sources */,
+				1A0000072C00000000000004 /* TwitterWebViewService.swift in Sources */,
+				1A0000092C00000000000005 /* PhotoLibraryManager.swift in Sources */,
+				1A00000B2C00000000000006 /* DownloaderViewModel.swift in Sources */,
+				1A00000D2C00000000000007 /* ContentView.swift in Sources */,
+				1A00000F2C00000000000008 /* MainDownloaderView.swift in Sources */,
+				1A0000112C00000000000009 /* SettingsView.swift in Sources */,
+				1A0000132C0000000000000A /* LoginWebViewModal.swift in Sources */,
+				1A0000152C0000000000000B /* ParseAndDownloadIntent.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1A0000702C00000000000050 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = TweetImageDownloader/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.antigravity.TweetImageDownloader;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		1A0000712C00000000000051 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = TweetImageDownloader/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.antigravity.TweetImageDownloader;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1A0000502C00000000000030 /* Build configuration list for PBXNativeTarget "TweetImageDownloader" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A0000702C00000000000050 /* Debug */,
+				1A0000712C00000000000051 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1A0000612C00000000000041 /* Build configuration list for PBXProject "TweetImageDownloader" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A0000702C00000000000050 /* Debug */,
+				1A0000712C00000000000051 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 1A0000602C00000000000040 /* Project object */;
+}
