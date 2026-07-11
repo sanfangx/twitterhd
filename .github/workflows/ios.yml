@@ -23,6 +23,7 @@ jobs:
 
       - name: Build iOS App (Unsigned Release)
         run: |
+          set -o pipefail
           xcodebuild clean build \
             -project TweetImageDownloader.xcodeproj \
             -scheme TweetImageDownloader \
@@ -31,7 +32,14 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
-            CONFIGURATION_BUILD_DIR=build/Release-iphoneos
+            CONFIGURATION_BUILD_DIR=build/Release-iphoneos | tee build.log || (echo "=== COMPILER ERRORS ===" && grep -E "error:|warning:" build.log && exit 1)
+
+      - name: Upload Build Log on Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Build-Failure-Log
+          path: build.log
 
       - name: Package .ipa File (Payload)
         run: |
