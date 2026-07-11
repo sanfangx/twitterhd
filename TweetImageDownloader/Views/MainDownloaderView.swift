@@ -2,14 +2,16 @@ import SwiftUI
 
 /// 推文图片一键下载器主视图
 public struct MainDownloaderView: View {
-    @StateObject private var viewModel = DownloaderViewModel()
+    @ObservedObject var viewModel: DownloaderViewModel
     
     private let columns = [
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12)
     ]
     
-    public init() {}
+    public init(viewModel: DownloaderViewModel = DownloaderViewModel()) {
+        self.viewModel = viewModel
+    }
     
     public var body: some View {
         NavigationStack {

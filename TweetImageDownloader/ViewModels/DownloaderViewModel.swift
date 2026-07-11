@@ -49,6 +49,8 @@ public final class DownloaderViewModel: ObservableObject {
                 let extracted = try await TwitterWebViewService.shared.parseTweetImages(from: text)
                 self.images = extracted
                 self.isParsing = false
+                let author = extracted.first?.authorUsername ?? "unknown"
+                HistoryManager.shared.addHistory(urlString: text, authorUsername: author)
             } catch {
                 self.isParsing = false
                 self.errorMessage = error.localizedDescription
