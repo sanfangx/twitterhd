@@ -17,7 +17,7 @@ public struct TweetImageItem: Identifiable, Hashable, Codable {
         previewURL: URL,
         originalURL: URL,
         authorUsername: String,
-        isSelected: Bool = true
+        isSelected: Bool = false
     ) {
         self.id = id
         self.previewURL = previewURL

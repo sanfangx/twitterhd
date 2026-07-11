@@ -72,43 +72,43 @@ public final class TwitterWebViewService: NSObject, ObservableObject {
         // 1. 加载目标推文链接页面
         try await loadURL(cleanedURL)
         
-        // 2. 高频短间隔轮询等待推文卡片与图片元素生成（150ms/次，极速侦测）
-        try await waitForTweetCardElement(maxAttempts: 35, delayMilliseconds: 150)
-        
-        // 3. 执行 JS 提取逻辑
-        guard let jsonString = try await webView.evaluateJavaScript(TwitterExtractorJS.extractionScript) as? String,
-              let jsonData = jsonString.data(using: .utf8) else {
-            throw TwitterParseError.jsExecutionFailed("返回值解析失败")
-        }
-        
-        let parseResult = try JSONDecoder().decode(JSParseResult.self, from: jsonData)
-        guard parseResult.success else {
-            throw TwitterParseError.jsExecutionFailed(parseResult.error ?? "未知错误")
-        }
-        
-        guard let entries = parseResult.images, !entries.isEmpty else {
-            throw TwitterParseError.noImagesFound
-        }
-        
-        // 4. 转为 Model 对象返回
-        let items = entries.compactMap { entry -> TweetImageItem? in
-            guard let previewURL = URL(string: entry.previewURL),
-                  let originalURL = URL(string: entry.originalURL) else {
-                return nil
+        // 2. 自动轮询提取重试循环 (最多尝试 45 次，每次间隔 200ms，合共等候达 9 秒，彻底避免需要手动反复点击解析)
+        for attempt in 0..<45 {
+            // 如果等待超过 2.5 秒仍未见图片，轻微滚动触发页面可能存在的懒加载
+            if attempt == 12 {
+                try? await webView.evaluateJavaScript("window.scrollBy(0, 350);")
             }
-            return TweetImageItem(
-                previewURL: previewURL,
-                originalURL: originalURL,
-                authorUsername: entry.authorUsername,
-                isSelected: true
-            )
+            
+            if let jsonString = try? await webView.evaluateJavaScript(TwitterExtractorJS.extractionScript) as? String,
+               let jsonData = jsonString.data(using: .utf8),
+               let parseResult = try? JSONDecoder().decode(JSParseResult.self, from: jsonData),
+               parseResult.success,
+               let entries = parseResult.images,
+               !entries.isEmpty {
+                
+                // 转为 Model 对象返回 (默认都不勾选: isSelected = false)
+                let items = entries.compactMap { entry -> TweetImageItem? in
+                    guard let previewURL = URL(string: entry.previewURL),
+                          let originalURL = URL(string: entry.originalURL) else {
+                        return nil
+                    }
+                    return TweetImageItem(
+                        previewURL: previewURL,
+                        originalURL: originalURL,
+                        authorUsername: entry.authorUsername,
+                        isSelected: false
+                    )
+                }
+                
+                if !items.isEmpty {
+                    return items
+                }
+            }
+            
+            try await Task.sleep(nanoseconds: 200_000_000)
         }
         
-        if items.isEmpty {
-            throw TwitterParseError.noImagesFound
-        }
-        
-        return items
+        throw TwitterParseError.noImagesFound
     }
     
     /// 加载指定 URL
