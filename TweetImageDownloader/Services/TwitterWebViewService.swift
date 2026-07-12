@@ -116,15 +116,20 @@ public final class TwitterWebViewService: NSObject, ObservableObject {
     }
     
     /// 安全包装的 evaluateJavaScript：捕获所有异常，将 JS 返回值安全转为 String 避免强转崩溃
+    /// 注意：WKWebView.evaluateJavaScript 的 completionHandler 为可选参数，
+    ///       Swift Concurrency 不会自动生成 async 桥接，必须手动用 withCheckedContinuation 包装
+    @discardableResult
     private func evaluateJavaScriptSafely(_ script: String) async -> String? {
-        do {
-            // evaluateJavaScript 返回 Any?，用 try? 捕获 JS 执行时的任何错误
-            let result = try await webView.evaluateJavaScript(script)
-            // 安全转换：用 as? 而不是 as! 避免类型不匹配崩溃
-            return result as? String
-        } catch {
-            // JS 执行出错（如页面尚未就绪、WebView 被销毁）时静默忽略，交给轮询重试
-            return nil
+        return await withCheckedContinuation { continuation in
+            webView.evaluateJavaScript(script) { result, error in
+                if error != nil {
+                    // JS 执行出错时静默忽略，交给轮询重试
+                    continuation.resume(returning: nil)
+                } else {
+                    // 安全转换：用 as? 而不是 as! 避免类型不匹配崩溃
+                    continuation.resume(returning: result as? String)
+                }
+            }
         }
     }
     

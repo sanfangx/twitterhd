@@ -56,7 +56,7 @@ jobs:
           cp build.log build_error.log
           git add -f build_error.log
           git commit -m "ci: upload build_error.log [skip ci]" || true
-          git push origin HEAD:feature/bg-and-history || true
+          git push origin HEAD:${{ github.ref_name }} || true
 
       - name: Package .ipa File (Payload)
         run: |
