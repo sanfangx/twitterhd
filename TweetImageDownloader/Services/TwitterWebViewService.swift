@@ -181,4 +181,13 @@ extension TwitterWebViewService: WKNavigationDelegate {
     public func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
         resumeNavigationContinuation(with: .failure(error))
     }
+    
+    /// iOS 在内存压力下杀掉 WebKit 渲染进程时触发
+    /// 此时 WKWebView 对象仍在内存中但内容为空白，必须主动 reload 恢复
+    public func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        // 如果当前有正在等待的导航 continuation，先让它以失败结束，避免永久挂起
+        resumeNavigationContinuation(with: .failure(TwitterParseError.timeout))
+        // 重新加载最后一次的 URL，让 WebView 恢复可用状态
+        webView.reload()
+    }
 }
