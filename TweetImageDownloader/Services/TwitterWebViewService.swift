@@ -13,7 +13,7 @@ public enum TwitterParseError: LocalizedError {
         case .invalidURL:
             return "无效的 Twitter/X 推文链接格式"
         case .timeout:
-            return "网页加载超时，请检查网络或在"设置"中确认是否需要重新登录"
+            return "网页加载超时，请检查网络或在「设置」中确认是否需要重新登录"
         case .jsExecutionFailed(let msg):
             return "网页解析异常: \(msg)"
         case .noImagesFound:
