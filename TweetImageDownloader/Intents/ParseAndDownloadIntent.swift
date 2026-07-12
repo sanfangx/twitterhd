@@ -21,6 +21,10 @@ public struct DownloadTweetOriginalImagesIntent: AppIntent {
         // 1. 调用后台 WKWebView 服务抓取推文图片
         let items = try await TwitterWebViewService.shared.parseTweetImages(from: tweetURL.absoluteString)
         
+        // 自动记录解析历史
+        let author = items.first?.authorUsername ?? "unknown"
+        HistoryManager.shared.addHistory(urlString: tweetURL.absoluteString, authorUsername: author)
+        
         // 2. 批量将 4K 原图写入 iOS 相册
         let count = try await PhotoLibraryManager.shared.saveOriginalImages(items) { completed, total in
             print("快捷指令执行保存进度: \(completed)/\(total)")

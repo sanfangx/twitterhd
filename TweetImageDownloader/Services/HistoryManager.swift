@@ -40,9 +40,14 @@ public class HistoryManager: ObservableObject {
         let newItem = TweetHistoryItem(urlString: cleanedURL, authorUsername: effectiveAuthor, timestamp: Date())
         current.insert(newItem, at: 0)
         
-        DispatchQueue.main.async {
+        if Thread.isMainThread {
             self.historyItems = current
             self.saveHistory()
+        } else {
+            DispatchQueue.main.async {
+                self.historyItems = current
+                self.saveHistory()
+            }
         }
     }
     
