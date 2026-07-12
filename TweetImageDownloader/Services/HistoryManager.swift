@@ -1,12 +1,5 @@
 import Foundation
 
-/// 作者分类历史记录组
-public struct AuthorHistoryGroup: Identifiable {
-    public var id: String { author }
-    public let author: String
-    public let items: [TweetHistoryItem]
-}
-
 /// 解析历史记录管理器 (长期持久化，按作者自动归类)
 public class HistoryManager: ObservableObject {
     public static let shared = HistoryManager()

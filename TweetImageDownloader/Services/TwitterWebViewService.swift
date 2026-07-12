@@ -80,7 +80,7 @@ public final class TwitterWebViewService: NSObject, ObservableObject {
             // 如果等待超过 2.5 秒仍未见图片，轻微滚动触发页面可能存在的懒加载
             if attempt == 12 {
                 // 安全执行 JS，忽略滚动指令的返回值和任何错误
-                _ = try? await evaluateJavaScriptSafely("window.scrollBy(0, 350);")
+                await evaluateJavaScriptSafely("window.scrollBy(0, 350);")
             }
             
             if let jsonString = await evaluateJavaScriptSafely(TwitterExtractorJS.extractionScript),
