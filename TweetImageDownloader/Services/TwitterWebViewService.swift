@@ -13,7 +13,7 @@ public enum TwitterParseError: LocalizedError {
         case .invalidURL:
             return "无效的 Twitter/X 推文链接格式"
         case .timeout:
-            return "网页加载超时，请检查网络或在“设置”中确认是否需要重新登录"
+            return "网页加载超时，请检查网络或在"设置"中确认是否需要重新登录"
         case .jsExecutionFailed(let msg):
             return "网页解析异常: \(msg)"
         case .noImagesFound:
@@ -47,7 +47,10 @@ public final class TwitterWebViewService: NSObject, ObservableObject {
     
     @Published public var isLoadingPage: Bool = false
     
+    /// 使用 nonisolated(unsafe) 避免在 NavigationDelegate 回调中访问 actor 引发的并发问题
     private var navigationContinuation: CheckedContinuation<Void, Error>?
+    /// 防止 continuation 被重复 resume（didFinish + didFail 同时触发时崩溃）
+    private var navigationContinuationResumed: Bool = false
     
     private override init() {
         let config = WKWebViewConfiguration()
@@ -76,10 +79,11 @@ public final class TwitterWebViewService: NSObject, ObservableObject {
         for attempt in 0..<45 {
             // 如果等待超过 2.5 秒仍未见图片，轻微滚动触发页面可能存在的懒加载
             if attempt == 12 {
-                try? await webView.evaluateJavaScript("window.scrollBy(0, 350);")
+                // 安全执行 JS，忽略滚动指令的返回值和任何错误
+                _ = try? await evaluateJavaScriptSafely("window.scrollBy(0, 350);")
             }
             
-            if let jsonString = try? await webView.evaluateJavaScript(TwitterExtractorJS.extractionScript) as? String,
+            if let jsonString = await evaluateJavaScriptSafely(TwitterExtractorJS.extractionScript),
                let jsonData = jsonString.data(using: .utf8),
                let parseResult = try? JSONDecoder().decode(JSParseResult.self, from: jsonData),
                parseResult.success,
@@ -111,26 +115,41 @@ public final class TwitterWebViewService: NSObject, ObservableObject {
         throw TwitterParseError.noImagesFound
     }
     
-    /// 加载指定 URL
+    /// 安全包装的 evaluateJavaScript：捕获所有异常，将 JS 返回值安全转为 String 避免强转崩溃
+    private func evaluateJavaScriptSafely(_ script: String) async -> String? {
+        do {
+            // evaluateJavaScript 返回 Any?，用 try? 捕获 JS 执行时的任何错误
+            let result = try await webView.evaluateJavaScript(script)
+            // 安全转换：用 as? 而不是 as! 避免类型不匹配崩溃
+            return result as? String
+        } catch {
+            // JS 执行出错（如页面尚未就绪、WebView 被销毁）时静默忽略，交给轮询重试
+            return nil
+        }
+    }
+    
+    /// 加载指定 URL，防止 continuation 被重复 resume
     private func loadURL(_ url: URL) async throws {
         return try await withCheckedThrowingContinuation { continuation in
+            // 重置 resume 保护标志
+            self.navigationContinuationResumed = false
             self.navigationContinuation = continuation
             let request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 15.0)
             self.webView.load(request)
         }
     }
     
-    /// 等待页面出现推文卡片容器或配图元素
-    private func waitForTweetCardElement(maxAttempts: Int, delayMilliseconds: UInt64) async throws {
-        for _ in 0..<maxAttempts {
-            let checkJS = "(document.querySelectorAll('img[src*=\"twimg.com/media/\"]').length > 0) || (document.querySelectorAll('[data-testid=\"cellInnerDiv\"]').length > 0)"
-            if let found = try? await webView.evaluateJavaScript(checkJS) as? Bool, found {
-                // 仅等待 150ms 确保页面配图列表稳定
-                try? await Task.sleep(nanoseconds: 150_000_000)
-                return
-            }
-            try await Task.sleep(nanoseconds: delayMilliseconds * 1_000_000)
+    /// 安全地 resume continuation，防止重复调用导致崩溃
+    private func resumeNavigationContinuation(with result: Result<Void, Error>) {
+        guard !navigationContinuationResumed else { return }
+        navigationContinuationResumed = true
+        switch result {
+        case .success:
+            navigationContinuation?.resume()
+        case .failure(let error):
+            navigationContinuation?.resume(throwing: error)
         }
+        navigationContinuation = nil
     }
     
     /// 清理并规范化推文地址
@@ -152,17 +171,14 @@ public final class TwitterWebViewService: NSObject, ObservableObject {
 // MARK: - WKNavigationDelegate
 extension TwitterWebViewService: WKNavigationDelegate {
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        navigationContinuation?.resume()
-        navigationContinuation = nil
+        resumeNavigationContinuation(with: .success(()))
     }
     
     public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        navigationContinuation?.resume(throwing: error)
-        navigationContinuation = nil
+        resumeNavigationContinuation(with: .failure(error))
     }
     
     public func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-        navigationContinuation?.resume(throwing: error)
-        navigationContinuation = nil
+        resumeNavigationContinuation(with: .failure(error))
     }
 }
