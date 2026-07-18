@@ -20,10 +20,83 @@ public enum TwitterExtractorJS {
                 var extractedImages = [];
                 var seenUrls = new Set();
                 
-                function cleanImageUrl(url) {
+                // 辅助函数：尝试从 React 内部 Fiber/Props 或全局状态深度提取该 media ID 上传时的真实扩展名（png / jpg）
+                function searchMediaExtensionInObj(obj, targetId, depth) {
+                    if (!obj || depth > 8 || typeof obj !== 'object') return null;
+                    if (obj.media_url_https && typeof obj.media_url_https === 'string') {
+                        if (obj.media_url_https.indexOf(targetId) !== -1) {
+                            var lower = obj.media_url_https.toLowerCase();
+                            if (lower.indexOf('.png') !== -1 || lower.indexOf('format=png') !== -1) return 'png';
+                            if (lower.indexOf('.jpg') !== -1 || lower.indexOf('.jpeg') !== -1 || lower.indexOf('format=jpg') !== -1) return 'jpg';
+                        }
+                    }
+                    if (Array.isArray(obj)) {
+                        for (var i = 0; i < obj.length; i++) {
+                            var res = searchMediaExtensionInObj(obj[i], targetId, depth + 1);
+                            if (res) return res;
+                        }
+                    } else {
+                        for (var k in obj) {
+                            if (k === 'memoizedProps' || k === 'return' || k === 'child' || k === 'media' || k === 'extended_entities' || k === 'entities' || k === 'tweet' || k === 'legacy' || k === 'card' || k === 'photo') {
+                                var res2 = searchMediaExtensionInObj(obj[k], targetId, depth + 1);
+                                if (res2) return res2;
+                            }
+                        }
+                    }
+                    return null;
+                }
+
+                function getOriginalFormat(imgElem, mediaId) {
+                    if (!mediaId) return null;
+                    
+                    // 1. 尝试向上遍历元素及推文容器卡片的 React 内部 Fiber 节点与属性
+                    var curr = imgElem;
+                    for (var depth = 0; depth < 10 && curr; depth++) {
+                        var keys = Object.keys(curr);
+                        for (var i = 0; i < keys.length; i++) {
+                            var key = keys[i];
+                            if (key.indexOf('__reactProps$') === 0 || key.indexOf('__reactFiber$') === 0) {
+                                try {
+                                    var foundExt = searchMediaExtensionInObj(curr[key], mediaId, 0);
+                                    if (foundExt) return foundExt;
+                                } catch (e) {}
+                            }
+                        }
+                        curr = curr.parentElement;
+                    }
+                    
+                    // 2. 检查 window.__INITIAL_STATE__ 页面初始化全局媒体缓存
+                    try {
+                        if (window.__INITIAL_STATE__ && window.__INITIAL_STATE__.entities && window.__INITIAL_STATE__.entities.media) {
+                            var medias = window.__INITIAL_STATE__.entities.media;
+                            for (var mKey in medias) {
+                                if (mKey.indexOf(mediaId) !== -1 || (medias[mKey].media_url_https && medias[mKey].media_url_https.indexOf(mediaId) !== -1)) {
+                                    var urlStr = medias[mKey].media_url_https || "";
+                                    if (urlStr.toLowerCase().endsWith('.png') || urlStr.toLowerCase().indexOf('format=png') !== -1) return 'png';
+                                    if (urlStr.toLowerCase().endsWith('.jpg') || urlStr.toLowerCase().indexOf('format=jpg') !== -1) return 'jpg';
+                                }
+                            }
+                        }
+                    } catch (e) {}
+                    
+                    return null;
+                }
+
+                function cleanImageUrl(url, realFormat) {
                     var cleaned = url.replace(/&?name=[^&]+/ig, '');
-                    // 如果格式是 webp，则强制转换为 jpg 格式以避免 Twitter CDN 的 WebP 重复有损压缩以及 iOS 导入/导出时的二次转码画质损失
-                    cleaned = cleaned.replace(/format=webp/ig, 'format=jpg');
+                    // 如果探测到画师上传的是无损 png 原图，或者 URL 本身是 png
+                    if (realFormat === 'png' || /format=png/i.test(cleaned) || /\.png($|\?)/i.test(cleaned)) {
+                        if (/format=webp/i.test(cleaned)) {
+                            cleaned = cleaned.replace(/format=webp/ig, 'format=png');
+                        } else if (/format=jpg/i.test(cleaned)) {
+                            cleaned = cleaned.replace(/format=jpg/ig, 'format=png');
+                        } else if (cleaned.indexOf('format=') === -1 && cleaned.indexOf('?') !== -1) {
+                            cleaned += '&format=png';
+                        }
+                    } else {
+                        // 否则默认转换 webp 为 jpg 避免有损 webp
+                        cleaned = cleaned.replace(/format=webp/ig, 'format=jpg');
+                    }
                     return cleaned;
                 }
                 
@@ -67,7 +140,14 @@ public enum TwitterExtractorJS {
                             continue;
                         }
                         
-                        var baseUrl = cleanImageUrl(src);
+                        // 提取该图片的推特媒体 ID
+                        var mediaIdMatch = src.match(/twimg\.com\/media\/([^?&.\/]+)/i);
+                        var mediaId = mediaIdMatch ? mediaIdMatch[1] : null;
+                        
+                        // 深度探测该推特媒体实际上传时的扩展格式
+                        var realFormat = getOriginalFormat(img, mediaId);
+                        
+                        var baseUrl = cleanImageUrl(src, realFormat);
                         if (seenUrls.has(baseUrl)) {
                             continue;
                         }
