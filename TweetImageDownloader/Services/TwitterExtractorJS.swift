@@ -21,7 +21,10 @@ public enum TwitterExtractorJS {
                 var seenUrls = new Set();
                 
                 function cleanImageUrl(url) {
-                    return url.replace(/&?name=[^&]+/ig, '');
+                    var cleaned = url.replace(/&?name=[^&]+/ig, '');
+                    // 如果格式是 webp，则强制转换为 jpg 格式以避免 Twitter CDN 的 WebP 重复有损压缩以及 iOS 导入/导出时的二次转码画质损失
+                    cleaned = cleaned.replace(/format=webp/ig, 'format=jpg');
+                    return cleaned;
                 }
                 
                 function isAuthorCard(card, username) {
