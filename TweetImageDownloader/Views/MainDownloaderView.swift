@@ -106,21 +106,7 @@ public struct MainDownloaderView: View {
                     .cornerRadius(10)
                 }
                 
-                // 粘贴并下载键
-                Button(action: viewModel.pasteAndDownload) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "bolt.fill")
-                        Text("粘贴并下载")
-                    }
-                    .font(.subheadline)
-                    .fontWeight(.bold)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(Color.green)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                }
-                
+
                 // 解析键
                 Button(action: viewModel.parseTweet) {
                     HStack(spacing: 4) {
