@@ -31,6 +31,45 @@ public final class DownloaderViewModel: ObservableObject {
         }
     }
     
+    /// 粘贴剪贴板链接并直接一键下载所有原图
+    public func pasteAndDownload() {
+        pasteFromClipboard()
+        let text = inputURLText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else {
+            self.errorMessage = "剪贴板为空或未找到有效推文链接"
+            return
+        }
+        
+        self.errorMessage = nil
+        self.isParsing = true
+        self.images.removeAll()
+        
+        Task {
+            do {
+                let extracted = try await TwitterWebViewService.shared.parseTweetImages(from: text)
+                var items = extracted
+                for i in items.indices {
+                    items[i].isSelected = true
+                }
+                self.images = items
+                self.isParsing = false
+                
+                let author = extracted.first?.authorUsername ?? "unknown"
+                HistoryManager.shared.addHistory(urlString: text, authorUsername: author)
+                
+                if !self.images.isEmpty {
+                    self.downloadSelectedImages()
+                } else {
+                    self.errorMessage = "该推文中未找到图片"
+                }
+            } catch {
+                self.isParsing = false
+                self.errorMessage = error.localizedDescription
+            }
+        }
+    }
+
+    
     /// 解析输入栏的推文链接
     public func parseTweet() {
         PhotoLibraryManager.shared.triggerTapHaptic()

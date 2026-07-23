@@ -64,7 +64,7 @@ public struct MainDownloaderView: View {
     
     // MARK: - 顶栏地址输入与操作按钮
     private var topAddressBarView: some View {
-        HStack(spacing: 8) {
+        VStack(spacing: 10) {
             // 输入栏地址框
             HStack(spacing: 6) {
                 Image(systemName: "link")
@@ -89,39 +89,59 @@ public struct MainDownloaderView: View {
             .background(Color(.systemGray6))
             .cornerRadius(10)
             
-            // 粘贴键
-            Button(action: viewModel.pasteFromClipboard) {
-                Text("粘贴")
+            // 操作按钮组
+            HStack(spacing: 8) {
+                // 粘贴键
+                Button(action: viewModel.pasteFromClipboard) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "doc.on.clipboard")
+                        Text("粘贴")
+                    }
                     .font(.subheadline)
                     .fontWeight(.medium)
-                    .padding(.horizontal, 12)
+                    .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
                     .background(Color.blue.opacity(0.12))
                     .foregroundColor(.blue)
                     .cornerRadius(10)
-            }
-            
-            // 解析键
-            Button(action: viewModel.parseTweet) {
-                if viewModel.isParsing {
-                    ProgressView()
-                        .tint(.white)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
-                        .background(Color.blue)
-                        .cornerRadius(10)
-                } else {
-                    Text("解析")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 10)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
                 }
+                
+                // 粘贴并下载键
+                Button(action: viewModel.pasteAndDownload) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "bolt.fill")
+                        Text("粘贴并下载")
+                    }
+                    .font(.subheadline)
+                    .fontWeight(.bold)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Color.green)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                }
+                
+                // 解析键
+                Button(action: viewModel.parseTweet) {
+                    HStack(spacing: 4) {
+                        if viewModel.isParsing {
+                            ProgressView()
+                                .tint(.white)
+                        } else {
+                            Image(systemName: "magnifyingglass")
+                            Text("解析")
+                        }
+                    }
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                }
+                .disabled(viewModel.isParsing)
             }
-            .disabled(viewModel.isParsing)
         }
     }
     
@@ -192,7 +212,7 @@ public struct MainDownloaderView: View {
     // MARK: - 状态占位视图
     private var emptyStateView: some View {
         VStack(spacing: 16) {
-            Spacer().frame(height: 80)
+            Spacer().frame(height: 50)
             Image(systemName: "photo.on.rectangle.angled")
                 .font(.system(size: 54))
                 .foregroundColor(.secondary.opacity(0.6))
@@ -204,6 +224,23 @@ public struct MainDownloaderView: View {
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
+            
+            Button(action: viewModel.pasteAndDownload) {
+                HStack(spacing: 6) {
+                    Image(systemName: "doc.on.clipboard.fill")
+                    Text("一键粘贴并下载原图")
+                        .fontWeight(.bold)
+                }
+                .font(.subheadline)
+                .foregroundColor(.white)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+                .background(Color.green)
+                .cornerRadius(12)
+                .shadow(color: Color.green.opacity(0.3), radius: 4, x: 0, y: 2)
+            }
+            .padding(.top, 8)
+            
             Spacer()
         }
     }
